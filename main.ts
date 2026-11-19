@@ -4,7 +4,7 @@
 // the gate reads it. Nothing this program writes is judged: the house
 // reads the post from X (its first picture, then its text).
 
-import { copyFileSync, mkdirSync } from "node:fs";
+import { copyFileSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const botDir = process.env.MAKEFUN_BOT_DIR ?? "/bot";
@@ -18,5 +18,16 @@ try {
   console.error(
     `could not copy POST.json from ${botDir}: ${(error as Error).message}`,
   );
+  process.exit(1);
+}
+
+// Read the copy back: it must parse and carry an https://x.com/ url, so a malformed POST.json fails here instead of at the gate.
+try {
+  const { url } = JSON.parse(readFileSync(join(outputDir, "POST.json"), "utf8"));
+  if (typeof url !== "string" || !url.startsWith("https://x.com/")) {
+    throw new Error("missing https://x.com/ url");
+  }
+} catch (error) {
+  console.error(`copied POST.json is not valid: ${(error as Error).message}`);
   process.exit(1);
 }
