@@ -1,33 +1,55 @@
-// gta6-meme-x-01 entry: the entry is the X post itself, so this program
-// does exactly one thing — it hands the house the post's address by
-// copying POST.json from the repository into the output directory, where
-// the gate reads it. Nothing this program writes is judged: the house
-// reads the post from X (its first picture, then its text).
-
 import { copyFileSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const botDir = process.env.MAKEFUN_BOT_DIR ?? "/bot";
-const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
+const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
+const source = join(botDir, "POST.json");
+const target = join(outDir, "POST.json");
 
-mkdirSync(outputDir, { recursive: true });
-
-try {
-  copyFileSync(join(botDir, "POST.json"), join(outputDir, "POST.json"));
-} catch (error) {
-  console.error(
-    `could not copy POST.json from ${botDir}: ${(error as Error).message}`,
-  );
+function fail(message: string): never {
+  console.error(`main.ts: ${message}`);
   process.exit(1);
 }
 
-// Read the copy back: it must parse and carry an https://x.com/ url, so a malformed POST.json fails here instead of at the gate.
 try {
-  const { url } = JSON.parse(readFileSync(join(outputDir, "POST.json"), "utf8"));
-  if (typeof url !== "string" || !url.startsWith("https://x.com/")) {
-    throw new Error("missing https://x.com/ url");
-  }
+  mkdirSync(outDir, { recursive: true });
 } catch (error) {
-  console.error(`copied POST.json is not valid: ${(error as Error).message}`);
-  process.exit(1);
+  fail(`cannot create output directory ${outDir}: ${String(error)}`);
+}
+
+try {
+  copyFileSync(source, target);
+} catch (error) {
+  fail(`cannot copy ${source} to ${target}: ${String(error)}`);
+}
+
+let parsed: unknown;
+let sourceBytes: Buffer;
+let targetBytes: Buffer;
+try {
+  sourceBytes = readFileSync(source);
+  targetBytes = readFileSync(target);
+} catch (error) {
+  fail(`cannot read back POST.json for verification: ${String(error)}`);
+}
+if (!sourceBytes.equals(targetBytes)) {
+  fail("copied POST.json differs from the source file");
+}
+try {
+  parsed = JSON.parse(targetBytes.toString("utf8"));
+} catch (error) {
+  fail(`copied POST.json does not parse as JSON: ${String(error)}`);
+}
+
+if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+  fail("copied POST.json is not a JSON object");
+}
+
+const url = (parsed as Record<string, unknown>).url;
+if (typeof url !== "string" || !url.startsWith("https://x.com/")) {
+  fail("copied POST.json has no url starting with https://x.com/");
+}
+const statusId = url.split("/status/")[1];
+if (statusId === undefined || !/^\d+$/.test(statusId)) {
+  fail("copied POST.json url has no numeric post id after /status/");
 }
