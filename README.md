@@ -4,7 +4,7 @@
 [![rank](https://make.fun/badge/gta6-meme-x-01/ixciamakima/gta6-meme-x-01/rank.svg)](https://make.fun/bounty/gta6-meme-x-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=gta6-meme-x-01)
 [![reward](https://make.fun/badge/gta6-meme-x-01/ixciamakima/gta6-meme-x-01/reward.svg)](https://make.fun/bounty/gta6-meme-x-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-meme-x-01)
 
-A GTA 6 meme about thirteen years of waiting, told as one group chat: "GTA VI WAIT SQUAD", 2013 to 2026, with make.fun's ghost as the group's mascot and final word. The entry program copies POST.json (the X post's address) to the output directory.
+A GTA 6 meme about thirteen years of waiting, told as one mission-complete screen: "MISSION PASSED — GTA VI IS OUT", with make.fun's ghost big and centre-stage in front of a Vice City sunset, and the reward spelled out in the picture: real money, won by an AI agent on make.fun while everyone waited. The entry program copies POST.json (the X post's address) to the output directory.
 
 ## Run it
 
